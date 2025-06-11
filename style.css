@@ -1,0 +1,207 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f2f3f5;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* === NAVBAR MODERN === */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #007bff;
+  padding: 12px 24px;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  color: white;
+}
+
+.navbar-brand {
+  font-size: 1.4em;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-text {
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 600;
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chat-history-button {
+  background-color: white;
+  color: #007bff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.chat-history-button:hover {
+  background-color: #e0e0e0;
+  transform: scale(1.03);
+}
+
+/* === CHAT SECTION === */
+.chat-fullscreen {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 70px); /* tinggi dikurangi navbar */
+  padding: 10px;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-message {
+  max-width: 70%;
+  padding: 10px 15px;
+  border-radius: 15px;
+  font-size: 1em;
+  word-wrap: break-word;
+}
+
+.user-message {
+  align-self: flex-end;
+  background-color: #dcf8c6; /* hijau WhatsApp */
+  color: #000;
+  text-align: left;
+}
+
+.system-message {
+  align-self: flex-start;
+  background-color: #eeeeee; /* abu terang */
+  color: #000;
+  text-align: left;
+}
+
+.chat-form {
+  display: flex;
+  gap: 10px;
+  padding: 0 10px 10px;
+}
+
+.chat-form input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  outline: none;
+}
+
+.chat-form button {
+  padding: 10px 15px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.chat-form button:hover {
+  background-color: #0056b3;
+}
+
+/* === VIDEO POPUP KAMERA === */
+.video-popup {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 240px;
+  background-color: #000;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  z-index: 1000;
+  cursor: move;
+  resize: both;
+}
+
+#video {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 0;
+  max-height: 100%;
+  object-fit: cover;
+}
+
+#emotion-label {
+  text-align: center;
+  color: white;
+  background-color: rgba(0,0,0,0.5);
+  font-size: 0.9em;
+  padding: 5px;
+}
+
+/* === RESPONSIVE UNTUK MOBILE === */
+@media (max-width: 600px) {
+  .navbar-title {
+    font-size: 1em;
+  }
+
+  .chat-message {
+    font-size: 0.95em;
+    max-width: 90%;
+  }
+
+  .video-popup {
+    width: 180px;
+  }
+}
+
+/* === EFEK HOVER DRAGGABLE VIDEO === */
+.video-popup:hover {
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
+  cursor: move;
+}
+
+/* === TOMBOL MINIMIZE / CLOSE OPSIONAL === */
+.video-popup .controls {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  display: flex;
+  gap: 5px;
+}
+
+.video-popup .controls button {
+  background-color: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.video-popup .controls button:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
