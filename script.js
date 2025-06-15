@@ -5,7 +5,11 @@ const chatMessages = document.getElementById('chat-messages');
 const chatForm = document.getElementById('chat-form');
 const chatInput = document.getElementById('chat-input');
 
-// Database pertanyaan berdasarkan emosi
+// === Variabel untuk face expression ===
+let faceEmotionSupport = null;
+let hasAskedFromFace = false;
+
+// Pertanyaan pembuka berdasarkan emosi wajah (sekali saja)
 const emotionPrompts = {
     happy: "Apa yang terjadi hari ini? Kamu terlihat sangat senang sekali! Kalau boleh, apakah kamu mau menceritakannya?",
     sad: "Aku melihat raut kesedihan di wajahmu. Tidak apa-apa untuk merasa sedih. Kalau kamu mau berbagi, aku di sini untuk mendengarkan.",
@@ -14,16 +18,14 @@ const emotionPrompts = {
     neutral: "Bagaimana kabarmu hari ini? Ceritakan apa saja yang sedang kamu pikirkan."
 };
 
-let lastAskedEmotion = null;
-
-// === Chat Log untuk Riwayat ===
 let chatLog = [];
 
+// Simpan log ke localStorage
 function saveChatLog() {
     localStorage.setItem("chitchat_log", JSON.stringify(chatLog));
 }
 
-// Kirim chat ke backend PHP (riwayat.php) untuk disimpan ke MySQL
+// Simpan ke database
 function saveToDatabase(message, sender, emotion = null) {
     fetch('riwayat.php', {
         method: 'POST',
@@ -32,13 +34,13 @@ function saveToDatabase(message, sender, emotion = null) {
     }).catch(error => console.error("Gagal menyimpan ke database:", error));
 }
 
-// Tambahan: Kirim ke API Gemini
-async function analyzeWithGemini(message) {
+// Kirim ke Gemini (dengan faceEmotion support)
+async function analyzeWithGemini(message, faceEmotion = null) {
     try {
         const res = await fetch('api_gemini.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message })
+            body: JSON.stringify({ message, faceEmotion })
         });
         return await res.json();
     } catch (err) {
@@ -47,7 +49,7 @@ async function analyzeWithGemini(message) {
     }
 }
 
-// Fungsi menampilkan pesan di chat
+// Tampilkan pesan
 function addMessage(text, sender, emotion = null) {
     const entry = {
         text,
@@ -66,7 +68,7 @@ function addMessage(text, sender, emotion = null) {
     saveToDatabase(text, sender, emotion);
 }
 
-// Form Chat
+// Event saat user submit chat
 chatForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const userText = chatInput.value.trim();
@@ -75,19 +77,20 @@ chatForm.addEventListener('submit', async (event) => {
     addMessage(userText, 'user');
     chatInput.value = '';
 
-    // Kirim ke Gemini
-    const result = await analyzeWithGemini(userText);
+    const result = await analyzeWithGemini(userText, faceEmotionSupport);
 
     if (result && result.emotion) {
         emotionLabel.innerText = `Emosi: ${result.emotion}`;
 
-        if (result.action === 'saran') {
+        if (result.action === 'saran' || result.action === 'respon') {
             addMessage(result.reason, 'system', result.emotion);
+        } else if (result.action === 'dengar') {
+            addMessage("Aku mendengarkan, lanjutkan ceritamu ya.", 'system', result.emotion);
         } else {
-            console.log("Gemini hanya mendengarkan, tidak memberi saran.");
+            addMessage("Baik, aku mencatat perasaanmu.", 'system', result.emotion);
         }
     } else {
-        addMessage("Maaf, saya tidak bisa memahami perasaanmu barusan.", 'system');
+        addMessage("Maaf, saya belum bisa memahami perasaanmu barusan.", 'system');
     }
 });
 
@@ -99,10 +102,10 @@ async function loadModels() {
         faceapi.nets.faceExpressionNet.loadFromUri(url),
         faceapi.nets.faceLandmark68TinyNet.loadFromUri(url)
     ]);
-    console.log('Model berhasil dimuat');
+    console.log('Model face-api.js dimuat');
 }
 
-// Nyalakan kamera
+// Aktifkan kamera
 async function startVideo() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
@@ -114,7 +117,7 @@ async function startVideo() {
     }
 }
 
-// Deteksi ekspresi wajah & tanya sesuai emosi
+// Deteksi ekspresi wajah (sekali tanya, lalu hanya support)
 function startDetection() {
     video.addEventListener('play', () => {
         const displaySize = { width: video.width, height: video.height };
@@ -129,33 +132,34 @@ function startDetection() {
                 const expressions = detections[0].expressions;
                 const maxEmotion = Object.entries(expressions).reduce((a, b) => a[1] > b[1] ? a : b)[0];
 
+                faceEmotionSupport = maxEmotion;
                 emotionLabel.innerText = `Ekspresi Wajah: ${maxEmotion}`;
 
-                if (emotionPrompts[maxEmotion] && maxEmotion !== lastAskedEmotion) {
+                if (emotionPrompts[maxEmotion] && !hasAskedFromFace) {
                     addMessage(emotionPrompts[maxEmotion], 'system');
-                    lastAskedEmotion = maxEmotion;
+                    hasAskedFromFace = true;
                 }
             } else {
                 emotionLabel.innerText = 'Wajah tidak terdeteksi';
-                lastAskedEmotion = null;
+                faceEmotionSupport = null;
             }
         }, 1000);
     });
 }
 
-// Bersihkan log saat reload
+// Bersihkan riwayat saat keluar
 window.addEventListener('beforeunload', () => {
     localStorage.removeItem("chitchat_log");
 });
 
-// Mulai semua proses
+// Inisialisasi saat halaman dimuat
 document.addEventListener('DOMContentLoaded', async () => {
     await loadModels();
     await startVideo();
     startDetection();
 });
 
-// Drag kamera
+// === Drag Kamera (video-popup) ===
 const videoPopup = document.querySelector('.video-popup');
 
 if (videoPopup) {
