@@ -62,7 +62,7 @@ body {
 .chat-fullscreen {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 70px); /* tinggi dikurangi navbar */
+  height: calc(100vh - 70px);
   padding: 10px;
 }
 
@@ -84,22 +84,67 @@ body {
   border-radius: 15px;
   font-size: 1em;
   word-wrap: break-word;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.chat-message:hover {
+  transform: translateY(-2px);
 }
 
 .user-message {
   align-self: flex-end;
-  background-color: #dcf8c6; /* hijau WhatsApp */
+  background-color: #dcf8c6;
   color: #000;
   text-align: left;
 }
 
 .system-message {
   align-self: flex-start;
-  background-color: #eeeeee; /* abu terang */
+  background-color: #eeeeee;
   color: #000;
   text-align: left;
 }
 
+/* === EMOJI AVATAR DI DEPAN PESAN === */
+.chat-message::before {
+  font-size: 1.1em;
+  margin-right: 6px;
+}
+
+.user-message::before {
+  content: "👤";
+}
+
+.system-message::before {
+  content: "🤖";
+}
+
+/* === TIMESTAMP PESAN === */
+.chat-timestamp {
+  font-size: 0.7em;
+  color: #888;
+  margin-top: 4px;
+  text-align: right;
+}
+
+/* === TYPING INDICATOR === */
+.typing-indicator {
+  font-style: italic;
+  color: #888;
+  font-size: 0.9em;
+  padding-left: 10px;
+  animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+  0%   { opacity: 0.2; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.2; }
+}
+
+/* === FORM INPUT CHAT === */
 .chat-form {
   display: flex;
   gap: 10px;
