@@ -18,20 +18,46 @@ $username = $_SESSION['username'] ?? 'Pengguna';
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ChitChat</title>
   <link rel="stylesheet" href="style.css"/>
+  <style>
+    .chat-form {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .chat-form input {
+      flex: 1;
+      padding: 10px;
+      font-size: 1rem;
+    }
+    .chat-form button {
+      padding: 10px 16px;
+      font-size: 1rem;
+      border: none;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+    .chat-form button[type="submit"] {
+      background-color: #6a1b9a;
+      color: white;
+    }
+    .chat-form button#end-session {
+      background-color: #f0f0f0;
+      color: #333;
+    }
+  </style>
 </head>
 <body>
   <!-- Navbar -->
   <nav class="navbar">
-  <div class="navbar-brand">
-    <img src="logo.svg" alt="ChitChat Logo" height="24" />
-    💬 <span class="brand-text">ChitChat</span>
-    <button class="chat-history-button" onclick="window.location.href='riwayat.php'">
-      📖 Riwayat Chat
-    </button>
-    <button onclick="window.location.href='logout.php'">🚪 Logout</button>
-  </div>
+    <div class="navbar-brand">
+      <img src="logo.svg" alt="ChitChat Logo" height="24" />
+      💬 <span class="brand-text">ChitChat</span>
+      <button class="chat-history-button" onclick="window.location.href='riwayat.php'">
+        📖 Riwayat Chat
+      </button>
+      <button onclick="window.location.href='logout.php'">🚪 Logout</button>
+    </div>
   </nav>
-
 
   <!-- Area Chat Fullscreen -->
   <div class="chat-fullscreen">
@@ -46,6 +72,9 @@ $username = $_SESSION['username'] ?? 'Pengguna';
         required
       />
       <button type="submit">Kirim</button>
+      <button type="button" id="end-session" onclick="window.location.href='summary.php'">
+        Akhiri Sesi
+      </button>
     </form>
   </div>
 

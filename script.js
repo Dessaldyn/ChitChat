@@ -9,7 +9,6 @@ const typingIndicator = document.createElement('div');
 typingIndicator.className = 'typing-indicator';
 typingIndicator.innerText = 'Gemini sedang mengetik...';
 
-// Database pertanyaan berdasarkan emosi
 const emotionPrompts = {
     happy: "Apa yang terjadi hari ini? Kamu terlihat sangat senang sekali! Kalau boleh, apakah kamu mau menceritakannya?",
     sad: "Aku melihat raut kesedihan di wajahmu. Tidak apa-apa untuk merasa sedih. Kalau kamu mau berbagi, aku di sini untuk mendengarkan.",
@@ -20,34 +19,46 @@ const emotionPrompts = {
 
 let lastAskedEmotion = null;
 let firstFacePromptSent = false;
-let currentFaceEmotion = '';
-
-// === Chat Log untuk Riwayat ===
+let currentFaceEmotion = 'neutral';
 let chatLog = [];
 
+// Simpan riwayat lokal
 function saveChatLog() {
     localStorage.setItem("chitchat_log", JSON.stringify(chatLog));
 }
 
+// Ambil 3 pesan terakhir user
+function getRecentContext(limit = 3) {
+    return chatLog
+        .filter(e => e.sender === 'user')
+        .slice(-limit)
+        .map(e => e.text)
+        .join('\n');
+}
+
+// Format waktu
 function formatTime() {
     const now = new Date();
     return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} | ${now.toLocaleDateString('id-ID')}`;
 }
 
+// Simpan ke database
 function saveToDatabase(message, sender, emotion = null) {
     fetch('riwayat.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message, sender, emotion })
-    }).catch(error => console.error("Gagal menyimpan ke database:", error));
+    }).catch(console.error);
 }
 
+// Analisis ke Gemini
 async function analyzeWithGemini(message, faceEmotion) {
+    const context = getRecentContext();
     try {
         const res = await fetch('api_gemini.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message, face_emotion: faceEmotion })
+            body: JSON.stringify({ message, face_emotion: faceEmotion, context })
         });
         return await res.json();
     } catch (err) {
@@ -56,17 +67,14 @@ async function analyzeWithGemini(message, faceEmotion) {
     }
 }
 
+// Tambah pesan ke UI
 function addMessage(text, sender, emotion = null) {
-    const entry = {
-        text,
-        sender,
-        timestamp: new Date().toISOString()
-    };
+    const entry = { text, sender, timestamp: new Date().toISOString() };
     chatLog.push(entry);
     saveChatLog();
 
-    const messageWrapper = document.createElement('div');
-    messageWrapper.classList.add('chat-message-wrapper');
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('chat-message-wrapper');
 
     const avatar = document.createElement('div');
     avatar.className = 'avatar';
@@ -80,19 +88,20 @@ function addMessage(text, sender, emotion = null) {
     timeLabel.className = 'timestamp';
     timeLabel.innerText = formatTime();
 
-    messageWrapper.appendChild(avatar);
-    messageWrapper.appendChild(messageElement);
-    messageWrapper.appendChild(timeLabel);
-    chatMessages.appendChild(messageWrapper);
+    wrapper.appendChild(avatar);
+    wrapper.appendChild(messageElement);
+    wrapper.appendChild(timeLabel);
+    chatMessages.appendChild(wrapper);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 
     saveToDatabase(text, sender, emotion);
 }
 
-chatForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
+// Form kirim chat
+chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
     const userText = chatInput.value.trim();
-    if (userText === '') return;
+    if (!userText) return;
 
     addMessage(userText, 'user');
     chatInput.value = '';
@@ -104,7 +113,7 @@ chatForm.addEventListener('submit', async (event) => {
     typingIndicator.remove();
 
     if (result && result.emotion) {
-        emotionLabel.innerText = `Emosi: ${result.emotion}`;
+        emotionLabel.innerText = `Ekspresi Wajah: ${currentFaceEmotion} | Emosi Teks: ${result.emotion}`;
 
         if (result.action === 'saran') {
             addMessage(result.reason, 'system', result.emotion);
@@ -116,6 +125,7 @@ chatForm.addEventListener('submit', async (event) => {
     }
 });
 
+// Load model face-api
 async function loadModels() {
     const url = 'models';
     await Promise.all([
@@ -126,6 +136,7 @@ async function loadModels() {
     console.log('Model berhasil dimuat');
 }
 
+// Aktifkan kamera
 async function startVideo() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
@@ -137,10 +148,9 @@ async function startVideo() {
     }
 }
 
+// Deteksi wajah
 function startDetection() {
     video.addEventListener('play', () => {
-        const displaySize = { width: video.width, height: video.height };
-
         setInterval(async () => {
             const detections = await faceapi
                 .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
@@ -151,7 +161,6 @@ function startDetection() {
                 const expressions = detections[0].expressions;
                 const maxEmotion = Object.entries(expressions).reduce((a, b) => a[1] > b[1] ? a : b)[0];
                 currentFaceEmotion = maxEmotion;
-
                 emotionLabel.innerText = `Ekspresi Wajah: ${maxEmotion}`;
 
                 if (!firstFacePromptSent && emotionPrompts[maxEmotion]) {
@@ -161,46 +170,44 @@ function startDetection() {
                 }
             } else {
                 emotionLabel.innerText = 'Wajah tidak terdeteksi';
-                currentFaceEmotion = '';
+                currentFaceEmotion = 'neutral';
             }
         }, 1000);
     });
 }
 
-window.addEventListener('beforeunload', () => {
-    localStorage.removeItem("chitchat_log");
-});
-
+// Inisialisasi
 document.addEventListener('DOMContentLoaded', async () => {
     await loadModels();
     await startVideo();
     startDetection();
 });
 
-const videoPopup = document.querySelector('.video-popup');
+// Reset chat saat keluar
+window.addEventListener('beforeunload', () => {
+    localStorage.removeItem("chitchat_log");
+});
 
+// Drag video popup
+const videoPopup = document.querySelector('.video-popup');
 if (videoPopup) {
     let isDragging = false;
-    let offsetX = 0;
-    let offsetY = 0;
+    let offsetX = 0, offsetY = 0;
 
-    videoPopup.addEventListener('mousedown', function (e) {
+    videoPopup.addEventListener('mousedown', (e) => {
         if (e.target.tagName.toLowerCase() === 'video') return;
-
         isDragging = true;
         offsetX = e.clientX - videoPopup.offsetLeft;
         offsetY = e.clientY - videoPopup.offsetTop;
         videoPopup.style.transition = "none";
     });
 
-    document.addEventListener('mousemove', function (e) {
+    document.addEventListener('mousemove', (e) => {
         if (isDragging) {
             videoPopup.style.left = `${e.clientX - offsetX}px`;
             videoPopup.style.top = `${e.clientY - offsetY}px`;
         }
     });
 
-    document.addEventListener('mouseup', function () {
-        isDragging = false;
-    });
+    document.addEventListener('mouseup', () => isDragging = false);
 }

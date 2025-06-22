@@ -1,0 +1,84 @@
+<!-- Contoh register.html -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register ChitChat</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+      font-family: 'Roboto', sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .register-container {
+      background: #fff;
+      padding: 2.5rem 2rem;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(44, 62, 80, 0.15);
+      width: 100%;
+      max-width: 370px;
+      text-align: center;
+    }
+    .register-container h2 {
+      margin-bottom: 1.5rem;
+      color: #2575fc;
+      font-weight: 700;
+    }
+    .register-container input[type="text"],
+    .register-container input[type="email"],
+    .register-container input[type="password"] {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: #f7f9fa;
+      transition: border 0.2s;
+    }
+    .register-container input:focus {
+      border-color: #2575fc;
+      outline: none;
+    }
+    .register-container button {
+      width: 100%;
+      padding: 0.75rem;
+      background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .register-container button:hover {
+      background: linear-gradient(90deg, #2575fc 0%, #6a11cb 100%);
+    }
+    .register-container .footer {
+      margin-top: 1.5rem;
+      font-size: 0.95rem;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <form class="register-container" method="POST" action="register.php">
+    <h2>Daftar ChitChat</h2>
+    <input type="text" name="username" placeholder="Username" required autofocus>
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <input type="password" name="confirm_password" placeholder="Konfirmasi Password" required>
+    <button type="submit">Daftar</button>
+    <div class="footer">
+      Sudah punya akun? <a href="login.php" style="color:#2575fc;text-decoration:none;">Login</a>
+    </div>
+  </form>
+</body>
+</html>
