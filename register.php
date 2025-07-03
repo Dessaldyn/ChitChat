@@ -1,23 +1,20 @@
 <?php
 session_start();
-require_once 'db.php'; // koneksi ke database
+require_once 'db.php';
 
 $error = "";
 $success = "";
 
-// Proses jika form disubmit
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $username = trim($_POST['username'] ?? '');
   $email = trim($_POST['email'] ?? '');
   $password = $_POST['password'] ?? '';
 
-  // Validasi sederhana
   if (empty($username) || empty($email) || empty($password)) {
     $error = "Semua field wajib diisi.";
   } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $error = "Email tidak valid.";
   } else {
-    // Cek apakah email sudah terdaftar
     $check = $conn->prepare("SELECT user_id FROM users WHERE email = ?");
     $check->bind_param("s", $email);
     $check->execute();
@@ -48,27 +45,91 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8">
   <title>Daftar - ChitChat</title>
   <link rel="stylesheet" href="style.css">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(to bottom, #0f0f0f, #1c1c1c);
+      color: white;
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .register-box {
+      background: #1f1f1f;
+      padding: 30px 40px;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.08);
+      max-width: 450px;
+      width: 100%;
+    }
+    .register-box h2 {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .register-box input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: none;
+      border-radius: 5px;
+    }
+    .register-box button {
+      width: 100%;
+      padding: 10px;
+      background-color: #7e57c2;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .register-box button:hover {
+      background-color: #6a46b0;
+    }
+    .register-box a {
+      color: #aaa;
+      text-decoration: none;
+      font-size: 14px;
+      display: block;
+      margin-top: 15px;
+      text-align: center;
+    }
+    .msg-success {
+      color: lightgreen;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .msg-error {
+      color: red;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 <body>
-  <div class="chat-fullscreen">
-    <div class="chat-header">📝 Daftar Akun ChitChat</div>
+  <div class="register-box" data-aos="zoom-in">
+    <h2>📝 Daftar Akun ChitChat</h2>
 
-    <form method="post" class="chat-form" style="flex-direction: column; gap: 15px;">
-      <?php if ($error): ?>
-        <div style="color: red; text-align: center;"><?= htmlspecialchars($error) ?></div>
-      <?php elseif ($success): ?>
-        <div style="color: green; text-align: center;"><?= htmlspecialchars($success) ?></div>
-      <?php endif; ?>
+    <?php if ($error): ?>
+      <div class="msg-error"><?= htmlspecialchars($error) ?></div>
+    <?php elseif ($success): ?>
+      <div class="msg-success"><?= htmlspecialchars($success) ?></div>
+    <?php endif; ?>
 
+    <form method="post">
       <input type="text" name="username" placeholder="Nama Pengguna" required />
       <input type="email" name="email" placeholder="Email" required />
       <input type="password" name="password" placeholder="Kata Sandi" required />
       <button type="submit">Daftar</button>
     </form>
 
-    <p style="text-align:center; margin-top:20px;">
-      Sudah punya akun? <a href="login.php">Masuk di sini</a>
-    </p>
+    <a href="login.php">Sudah punya akun? Masuk di sini</a>
+    <a href="landing.php">⬅️ Kembali ke Beranda</a>
   </div>
+
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>AOS.init();</script>
 </body>
 </html>

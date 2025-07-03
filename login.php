@@ -1,8 +1,8 @@
 <?php
 session_start();
-require_once 'db.php'; // koneksi ke database
+require_once 'db.php';
 
-// Cek jika user sudah login, redirect ke index
+// Jika sudah login, langsung ke index
 if (isset($_SESSION['user_id'])) {
   header("Location: index.php");
   exit;
@@ -14,12 +14,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $email = $_POST['email'] ?? '';
   $password = $_POST['password'] ?? '';
 
-  // Validasi input sederhana
   if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $error = "Email tidak valid.";
   } else {
-    $sql = "SELECT user_id, username, password_hash FROM users WHERE email = ?";
-    $stmt = $conn->prepare($sql);
+    $stmt = $conn->prepare("SELECT user_id, username, password_hash FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $stmt->store_result();
@@ -49,24 +47,83 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8">
   <title>Login - ChitChat</title>
   <link rel="stylesheet" href="style.css">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(to bottom, #0f0f0f, #1c1c1c);
+      color: white;
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .login-box {
+      background: #1f1f1f;
+      padding: 30px 40px;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+    .login-box h2 {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .login-box input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: none;
+      border-radius: 5px;
+    }
+    .login-box button {
+      width: 100%;
+      padding: 10px;
+      background-color: #7e57c2;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .login-box button:hover {
+      background-color: #6a46b0;
+    }
+    .login-box a {
+      color: #aaa;
+      text-decoration: none;
+      font-size: 14px;
+      display: block;
+      margin-top: 15px;
+      text-align: center;
+    }
+    .error-msg {
+      color: red;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 <body>
-  <div class="chat-fullscreen">
-    <div class="chat-header">🔐 Login ke ChitChat</div>
+  <div class="login-box" data-aos="fade-up">
+    <h2>🔐 Login ke ChitChat</h2>
 
-    <form method="post" class="chat-form" style="flex-direction: column; gap: 15px;">
-      <?php if ($error): ?>
-        <div style="color: red; text-align: center;"><?= htmlspecialchars($error) ?></div>
-      <?php endif; ?>
-      
+    <?php if ($error): ?>
+      <div class="error-msg"><?= htmlspecialchars($error) ?></div>
+    <?php endif; ?>
+
+    <form method="post">
       <input type="email" name="email" placeholder="Email" required />
       <input type="password" name="password" placeholder="Kata Sandi" required />
       <button type="submit">Masuk</button>
     </form>
 
-    <p style="text-align:center; margin-top:20px;">
-      Belum punya akun? <a href="register.php">Daftar di sini</a>
-    </p>
+    <a href="register.php">Belum punya akun? Daftar di sini</a>
+    <a href="landing.php">⬅️ Kembali ke Beranda</a>
   </div>
+
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>AOS.init();</script>
 </body>
 </html>

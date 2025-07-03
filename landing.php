@@ -36,11 +36,14 @@
 <body>
   <!-- Navbar -->
   <nav class="navbar navbar-dark bg-dark px-4">
-    <span class="navbar-brand">💬 <strong>ChitChat</strong></span>
+    <span class="navbar-brand d-flex align-items-center">
+      <img src="Logo_ChitChat-removebg-preview.png" alt="Logo" width="48" height="48" class="me-3 align-middle" style="border-radius:50%;object-fit:cover;">
+      <strong>ChitChat</strong>
+    </span>
     <div>
       <a href="login.php" class="btn btn-outline-light">Masuk</a>
     </div>
-  </nav>
+</nav>
 
   <!-- Hero Section -->
   <section class="hero container" data-aos="fade-up">
